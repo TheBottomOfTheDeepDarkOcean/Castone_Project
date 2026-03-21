@@ -42,10 +42,10 @@ Tạo file .env ở thư mục gốc.
 Dán chuỗi "MONGODB_URI=mongodb://localhost:27017/my_store_db"
 
 4. **Khởi chạy Server:**
-# Chế độ lập trình (Auto-reload)
 npm run start:dev
 
-**Trạng thái phát triển** 
+**Trạng thái phát triển:** 
+
 [x] Khởi tạo kiến trúc NestJS.
 
 [x] Kết nối Database Atlas.
