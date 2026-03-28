@@ -8,7 +8,7 @@ import { ProductItemSchema } from './schemas/product-item.schema';
 
 @Module({
   imports: [
-    // Khai báo các Model (Bảng) vào Module này để Mongoose hiểu
+    // Khai báo các Model vào Module cho Mongoose xài
     MongooseModule.forFeature([
       { name: 'Product', schema: ProductSchema },
       { name: 'ProductItem', schema: ProductItemSchema },

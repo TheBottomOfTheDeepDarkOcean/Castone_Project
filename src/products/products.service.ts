@@ -1,19 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProductsRepository } from './products.repository';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly productRepository: ProductsRepository) {}
 
-  async findAll(query: any = {}) {
+  async findAll(query: any = {}): Promise<any> {
     const { page = 1, limit = 10, sort, cpu, vga, minPrice, maxPrice } = query;
     const filter: any = {};
 
-    // Thay vì dùng filter['...'] trực tiếp, ta dùng ép kiểu (filter as any)
-    if (cpu) filter['specifications.cpu'] = new RegExp(cpu, 'i');
-    if (vga) filter['specifications.vga'] = new RegExp(vga, 'i');
+    if (cpu) filter['specifications.cpu'] = new RegExp(String(cpu), 'i');
+    if (vga) filter['specifications.vga'] = new RegExp(String(vga), 'i');
 
     if (minPrice || maxPrice) {
       filter.price = {};
@@ -41,16 +44,55 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<any> {
     const product = await this.productRepository.findById(id);
     if (!product) throw new NotFoundException('Không tìm thấy sản phẩm!');
 
     const items = await this.productRepository.findItemsByProductId(id);
-
+    const productData = (product as any).toObject
+      ? product.toObject()
+      : product;
     return {
-      ...product,
+      ...productData,
       availableItems: items.filter((item: any) => item.status === 'AVAILABLE'),
-      totalInStock: items.length,
+      totalInStock: (product as any).totalStock || 0,
     };
+  }
+
+  async create(productData: any) {
+    if (!productData.sku) {
+      productData.sku = `SKU-${Date.now()}`;
+    }
+    return await this.productRepository.create(productData);
+  }
+
+  async update(id: string, updateData: any) {
+    const updatedProduct = await this.productRepository.update(id, updateData);
+    if (!updatedProduct) {
+      throw new NotFoundException('Không tìm thấy sản phẩm để cập nhật!');
+    }
+    return updatedProduct;
+  }
+
+  async updateStock(id: string, quantityChange: number) {
+    const product = await this.productRepository.findById(id);
+    if (!product) throw new NotFoundException('Sản phẩm không tồn tại!');
+
+    const currentStock = (product as any).totalStock || 0;
+    const newStock = currentStock + quantityChange;
+
+    if (newStock < 0) {
+      throw new BadRequestException(
+        `Kho không đủ! Hiện tại chỉ còn ${currentStock} sản phẩm.`,
+      );
+    }
+
+    return await this.productRepository.update(id, { totalStock: newStock });
+  }
+
+  async remove(id: string) {
+    const result = await this.productRepository.delete(id);
+    if (!result) throw new NotFoundException('Không tìm thấy sản phẩm để xóa!');
+    return { message: 'Xóa sản phẩm thành công!' };
   }
 }
