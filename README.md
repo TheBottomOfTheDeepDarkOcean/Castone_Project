@@ -29,7 +29,7 @@ npm install --legacy-peer-deps (thêm cái legacy để khỏi bị cảnh báo 
 
 3. **Cấu hình môi trường:**
 Tạo file .env ở thư mục gốc.
-Dán chuỗi "MONGODB_URI=mongodb://localhost:27017/my_store_db"
+Dán chuỗi "mongodb+srv://nettech_db:MOlezawS6Xhzggbd@nettechdatabase.z1l7rpg.mongodb.net/?appName=NettechDatabase"
 
 4. **Khởi chạy Server:**
 npm run start:dev
